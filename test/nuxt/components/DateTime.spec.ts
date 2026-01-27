@@ -9,6 +9,7 @@ vi.mock('~/composables/useSettings', () => ({
   useSettings: () => ({
     settings: ref({ relativeDates: mockRelativeDates.value }),
   }),
+  useAccentColor: () => ({}),
 }))
 
 describe('DateTime', () => {
