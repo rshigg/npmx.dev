@@ -1,3 +1,7 @@
+import { ACCENT_COLORS } from './shared/utils/constants'
+
+const accentInitScript = `(function(){var s=JSON.parse(localStorage.getItem('npmx-settings'));if(s&&s.accentColorId){document.documentElement.style.setProperty('--accent-color',${JSON.stringify(ACCENT_COLORS)}[s.accentColorId])}})()`
+
 export default defineNuxtConfig({
   modules: [
     function (_, nuxt) {
@@ -48,8 +52,7 @@ export default defineNuxtConfig({
       ],
       script: [
         {
-          innerHTML: `(function(){var c={rose:'#e9aeba',amber:'#fbbf24',emerald:'#34d399',sky:'#38bdf8',violet:'#a78bfa',coral:'#fb7185'};var s=localStorage.getItem('npmx-accent');document.documentElement.style.setProperty('--accent-color',s&&c[s]||'#666666')})()`,
-          type: 'text/javascript',
+          innerHTML: accentInitScript,
         },
       ],
     },

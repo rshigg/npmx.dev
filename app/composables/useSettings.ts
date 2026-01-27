@@ -1,5 +1,8 @@
 import type { RemovableRef } from '@vueuse/core'
 import { useLocalStorage } from '@vueuse/core'
+import { ACCENT_COLORS } from '#shared/utils/constants'
+
+type AccentColorId = keyof typeof ACCENT_COLORS
 
 /**
  * Application settings stored in localStorage
@@ -9,11 +12,14 @@ export interface AppSettings {
   relativeDates: boolean
   /** Include @types/* package in install command for packages without built-in types */
   includeTypesInInstall: boolean
+  /** Accent color theme */
+  accentColorId: AccentColorId | null
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
   relativeDates: false,
   includeTypesInInstall: true,
+  accentColorId: null,
 }
 
 const STORAGE_KEY = 'npmx-settings'
@@ -44,4 +50,33 @@ export function useSettings() {
 export function useRelativeDates() {
   const { settings } = useSettings()
   return computed(() => settings.value.relativeDates)
+}
+
+/**
+ * Composable for managing accent color.
+ */
+export function useAccentColor() {
+  const { settings } = useSettings()
+
+  const accentColors = Object.entries(ACCENT_COLORS).map(([id, value]) => ({
+    id: id as AccentColorId,
+    name: id,
+    value,
+  }))
+
+  function setAccentColor(id: AccentColorId | null) {
+    const color = id ? ACCENT_COLORS[id] : null
+    if (color) {
+      document.documentElement.style.setProperty('--accent-color', color)
+    } else {
+      document.documentElement.style.removeProperty('--accent-color')
+    }
+    settings.value.accentColorId = id
+  }
+
+  return {
+    accentColors,
+    selectedAccentColor: computed(() => settings.value.accentColorId),
+    setAccentColor,
+  }
 }
