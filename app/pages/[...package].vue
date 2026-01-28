@@ -295,12 +295,12 @@ defineOgImageComponent('Package', {
 </script>
 
 <template>
-  <main class="package-page container">
-    <PackageSkeleton v-if="status === 'pending'" class="col-span-full row-span-full" />
+  <main class="container py-8 xl:py-12">
+    <PackageSkeleton v-if="status === 'pending'" />
 
     <article
       v-else-if="status === 'success' && pkg"
-      class="motion-safe:animate-fade-in contents animate-fade-in"
+      class="package-page motion-safe:animate-fade-in animate-fade-in"
     >
       <!-- Package header -->
       <header class="area-header pb-8 border-b border-border">
@@ -887,7 +887,7 @@ defineOgImageComponent('Package', {
     <div
       v-else-if="status === 'error'"
       role="alert"
-      class="col-span-full flex flex-col items-center py-20 text-center"
+      class="flex flex-col items-center py-20 text-center"
     >
       <h1 class="font-mono text-2xl font-medium mb-4">{{ $t('package.not_found') }}</h1>
       <p class="text-fg-muted mb-8">
@@ -901,7 +901,6 @@ defineOgImageComponent('Package', {
 <style scoped>
 .package-page {
   display: grid;
-  padding: 2rem 1rem;
   gap: 2rem;
 
   /* Mobile: single column, sidebar above readme */
@@ -917,7 +916,6 @@ defineOgImageComponent('Package', {
 /* Tablet/medium: header/install/vulns full width, readme+sidebar side by side */
 @media (min-width: 1024px) {
   .package-page {
-    padding: 3rem 1.5rem;
     grid-template-columns: 2fr 1fr;
     grid-template-areas:
       'header  header'
@@ -930,7 +928,7 @@ defineOgImageComponent('Package', {
 /* Desktop: floating sidebar alongside all content */
 @media (min-width: 1280px) {
   .package-page {
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 20rem;
     grid-template-areas:
       'header  sidebar'
       'install sidebar'
