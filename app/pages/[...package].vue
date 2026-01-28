@@ -300,7 +300,7 @@ defineOgImageComponent('Package', {
 
     <article
       v-else-if="status === 'success' && pkg"
-      class="package-page motion-safe:animate-fade-in animate-fade-in"
+      class="package-page motion-safe:animate-fade-in"
     >
       <!-- Package header -->
       <header class="area-header pb-8 border-b border-border">
@@ -775,7 +775,7 @@ defineOgImageComponent('Package', {
         <!-- eslint-disable vue/no-v-html -- HTML is sanitized server-side -->
         <div
           v-if="readmeData?.html"
-          class="readme-content prose prose-invert max-w-70ch"
+          class="readme-content prose prose-invert max-w-[70ch]"
           v-html="readmeData.html"
         />
         <p v-else class="text-fg-subtle italic">
