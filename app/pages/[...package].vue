@@ -887,6 +887,161 @@ function handleClick(event: MouseEvent) {
         </ClientOnly>
       </div>
 
+      <div class="area-sidebar self-start">
+        <!-- Sidebar -->
+        <aside class="sticky top-20 px-2 py-1 space-y-4 sm:space-y-6 min-w-0 overflow-hidden">
+          <!-- Maintainers -->
+          <CollapsibleSection v-if="pkg.maintainers?.length" id="maintainers">
+            <template #title>
+              <h2>{{ $t('package.maintainers.title') }}</h2>
+            </template>
+            <PackageMaintainersList :package-name="pkg.name" :maintainers="pkg.maintainers" />
+          </CollapsibleSection>
+
+          <!-- Access Controls -->
+          <ClientOnly>
+            <CollapsibleSection v-if="pkg.name.startsWith('@')" id="access">
+              <template #title>
+                <h2>{{ $t('package.access.title') }}</h2>
+              </template>
+              <PackageAccessControlsList :package-name="pkg.name" />
+            </CollapsibleSection>
+          </ClientOnly>
+
+          <!-- Keywords -->
+          <CollapsibleSection v-if="displayVersion?.keywords?.length" id="keywords">
+            <template #title>
+              <h2>{{ $t('package.keywords_title') }}</h2>
+            </template>
+            <ul class="flex flex-wrap gap-1.5 list-none m-0 p-0">
+              <li v-for="keyword in displayVersion.keywords.slice(0, 15)" :key="keyword">
+                <NuxtLink :to="{ name: 'search', query: { q: `keywords:${keyword}` } }" class="tag">
+                  {{ keyword }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </CollapsibleSection>
+
+          <!-- Download Stats -->
+          <CollapsibleSection id="downloads">
+            <template #title>
+              <h2>{{ $t('package.downloads.title') }}</h2>
+            </template>
+            <PackageDownloadStatsContent :package-name="packageName" />
+          </CollapsibleSection>
+
+          <!-- Playgrounds -->
+          <CollapsibleSection v-if="readmeData?.playgroundLinks?.length" id="playgrounds">
+            <template #title>
+              <h2>{{ $t('package.playgrounds.title') }}</h2>
+            </template>
+            <PackagePlaygroundsList :links="readmeData.playgroundLinks" />
+          </CollapsibleSection>
+
+          <!-- Compatibility -->
+          <CollapsibleSection
+            v-if="displayVersion?.engines?.node || displayVersion?.engines?.npm"
+            id="compatibility"
+          >
+            <template #title>
+              <h2>{{ $t('package.compatibility') }}</h2>
+            </template>
+            <dl class="space-y-2">
+              <div v-if="displayVersion.engines?.node" class="flex justify-between gap-4 py-1">
+                <dt class="text-fg-muted text-sm shrink-0">node</dt>
+                <dd class="font-mono text-sm text-fg text-end" :title="displayVersion.engines.node">
+                  {{ displayVersion.engines.node }}
+                </dd>
+              </div>
+              <div v-if="displayVersion.engines?.npm" class="flex justify-between gap-4 py-1">
+                <dt class="text-fg-muted text-sm shrink-0">npm</dt>
+                <dd class="font-mono text-sm text-fg text-end" :title="displayVersion.engines.npm">
+                  {{ displayVersion.engines.npm }}
+                </dd>
+              </div>
+            </dl>
+          </CollapsibleSection>
+
+          <!-- Versions -->
+          <CollapsibleSection
+            v-if="pkg.versions && Object.keys(pkg.versions).length > 0"
+            id="versions"
+          >
+            <template #title>
+              <h2>{{ $t('package.versions.title') }}</h2>
+            </template>
+            <PackageVersionsList
+              :package-name="pkg.name"
+              :versions="pkg.versions"
+              :dist-tags="pkg['dist-tags'] ?? {}"
+              :time="pkg.time"
+            />
+          </CollapsibleSection>
+
+          <!-- Install Scripts Warning -->
+          <CollapsibleSection v-if="displayVersion?.installScripts" id="install-scripts">
+            <template #title>
+              <span class="i-carbon-warning-alt text-yellow-500 size-3" />
+              <h2>{{ $t('package.install_scripts.title') }}</h2>
+            </template>
+            <PackageInstallScriptsList
+              :package-name="pkg.name"
+              :install-scripts="displayVersion.installScripts"
+            />
+          </CollapsibleSection>
+
+          <!-- Dependencies -->
+          <CollapsibleSection v-if="displayVersion?.dependencies" id="dependencies">
+            <template #title>
+              <h2>
+                {{
+                  $t('package.dependencies.title', {
+                    count: Object.keys(displayVersion.dependencies).length,
+                  })
+                }}
+              </h2>
+            </template>
+            <PackageDependenciesList :dependencies="displayVersion.dependencies" />
+          </CollapsibleSection>
+
+          <!-- Peer Dependencies -->
+          <CollapsibleSection v-if="displayVersion?.peerDependencies" id="peer-dependencies">
+            <template #title>
+              <h2>
+                {{
+                  $t('package.peer_dependencies.title', {
+                    count: Object.keys(displayVersion.peerDependencies).length,
+                  })
+                }}
+              </h2>
+            </template>
+            <PackagePeerDependenciesList
+              :peer-dependencies="displayVersion.peerDependencies"
+              :peer-dependencies-meta="displayVersion.peerDependenciesMeta"
+            />
+          </CollapsibleSection>
+
+          <!-- Optional Dependencies -->
+          <CollapsibleSection
+            v-if="displayVersion?.optionalDependencies"
+            id="optional-dependencies"
+          >
+            <template #title>
+              <h2>
+                {{
+                  $t('package.optional_dependencies.title', {
+                    count: Object.keys(displayVersion.optionalDependencies).length,
+                  })
+                }}
+              </h2>
+            </template>
+            <PackageOptionalDependenciesList
+              :optional-dependencies="displayVersion.optionalDependencies"
+            />
+          </CollapsibleSection>
+        </aside>
+      </div>
+
       <!-- README -->
       <section id="readme" class="area-readme min-w-0 scroll-mt-20">
         <h2 id="readme-heading" class="group text-xs text-fg-subtle uppercase tracking-wider mb-4">
@@ -915,119 +1070,6 @@ function handleClick(event: MouseEvent) {
           }}</a>
         </p>
       </section>
-
-      <div class="area-sidebar">
-        <!-- Sidebar -->
-        <aside class="sticky top-20 space-y-6 sm:space-y-8 min-w-0 overflow-hidden">
-          <!-- Maintainers (with admin actions when connected) -->
-          <PackageMaintainers :package-name="pkg.name" :maintainers="pkg.maintainers" />
-
-          <!-- Team access controls (for scoped packages when connected) -->
-          <ClientOnly>
-            <PackageAccessControls :package-name="pkg.name" />
-          </ClientOnly>
-
-          <!-- Keywords -->
-          <section id="keywords" v-if="displayVersion?.keywords?.length" class="scroll-mt-20">
-            <h2
-              id="keywords-heading"
-              class="group text-xs text-fg-subtle uppercase tracking-wider mb-3"
-            >
-              <a
-                href="#keywords"
-                class="inline-flex items-center gap-1.5 text-fg-subtle hover:text-fg-muted transition-colors duration-200 no-underline"
-              >
-                {{ $t('package.keywords_title') }}
-                <span
-                  class="i-carbon:link w-3 h-3 block opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  aria-hidden="true"
-                />
-              </a>
-            </h2>
-            <ul class="flex flex-wrap gap-1.5 list-none m-0 p-0">
-              <li v-for="keyword in displayVersion.keywords.slice(0, 15)" :key="keyword">
-                <NuxtLink :to="{ name: 'search', query: { q: `keywords:${keyword}` } }" class="tag">
-                  {{ keyword }}
-                </NuxtLink>
-              </li>
-            </ul>
-          </section>
-
-          <!-- Download stats -->
-          <PackageWeeklyDownloadStats :packageName />
-
-          <!-- Playground links -->
-          <PackagePlaygrounds
-            v-if="readmeData?.playgroundLinks?.length"
-            :links="readmeData.playgroundLinks"
-          />
-
-          <section
-            id="compatibility"
-            v-if="
-              displayVersion?.engines && (displayVersion.engines.node || displayVersion.engines.npm)
-            "
-            class="scroll-mt-20"
-          >
-            <h2
-              id="compatibility-heading"
-              class="group text-xs text-fg-subtle uppercase tracking-wider mb-3"
-            >
-              <a
-                href="#compatibility"
-                class="inline-flex items-center gap-1.5 text-fg-subtle hover:text-fg-muted transition-colors duration-200 no-underline"
-              >
-                {{ $t('package.compatibility') }}
-                <span
-                  class="i-carbon:link w-3 h-3 block opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  aria-hidden="true"
-                />
-              </a>
-            </h2>
-            <dl class="space-y-2">
-              <div v-if="displayVersion.engines.node" class="flex justify-between gap-4 py-1">
-                <dt class="text-fg-muted text-sm shrink-0">node</dt>
-                <dd class="font-mono text-sm text-fg text-end" :title="displayVersion.engines.node">
-                  {{ displayVersion.engines.node }}
-                </dd>
-              </div>
-              <div v-if="displayVersion.engines.npm" class="flex justify-between gap-4 py-1">
-                <dt class="text-fg-muted text-sm shrink-0">npm</dt>
-                <dd class="font-mono text-sm text-fg text-end" :title="displayVersion.engines.npm">
-                  {{ displayVersion.engines.npm }}
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <!-- Versions (grouped by release channel) -->
-          <PackageVersions
-            v-if="pkg.versions && Object.keys(pkg.versions).length > 0"
-            :package-name="pkg.name"
-            :versions="pkg.versions"
-            :dist-tags="pkg['dist-tags'] ?? {}"
-            :time="pkg.time"
-          />
-
-          <!-- Install Scripts Warning -->
-          <PackageInstallScripts
-            v-if="displayVersion?.installScripts"
-            :package-name="pkg.name"
-            :install-scripts="displayVersion.installScripts"
-          />
-
-          <!-- Dependencies -->
-          <PackageDependencies
-            v-if="hasDependencies && displayVersion"
-            :package-name="pkg.name"
-            :version="displayVersion.version"
-            :dependencies="displayVersion.dependencies"
-            :peer-dependencies="displayVersion.peerDependencies"
-            :peer-dependencies-meta="displayVersion.peerDependenciesMeta"
-            :optional-dependencies="displayVersion.optionalDependencies"
-          />
-        </aside>
-      </div>
     </article>
 
     <!-- Error state -->
@@ -1049,9 +1091,9 @@ function handleClick(event: MouseEvent) {
 .package-page {
   display: grid;
   gap: 2rem;
+  grid-auto-rows: min-content;
 
   /* Mobile: single column, sidebar above readme */
-  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'header'
     'install'
@@ -1076,11 +1118,20 @@ function handleClick(event: MouseEvent) {
 @media (min-width: 1280px) {
   .package-page {
     grid-template-columns: 1fr 20rem;
+    /* Use min-content for top rows, 1fr for readme to absorb any extra sidebar height */
+    grid-template-rows: repeat(3, min-content) 1fr;
     grid-template-areas:
       'header  sidebar'
       'install sidebar'
       'vulns   sidebar'
       'readme  sidebar';
+
+    &:not(:has(.area-vulns)) {
+      /* If there is no vulnerabilities section we don't want extra space above the readme */
+      .area-readme {
+        grid-row: vulns / readme;
+      }
+    }
   }
 }
 
